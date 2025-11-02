@@ -1,0 +1,207 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://radarx.io/schemas/wallet-report-response.json",
+  "title": "Wallet Report Response",
+  "description": "Complete wallet analytics report with win rates, PnL, and behavioral insights",
+  "type": "object",
+  "required": [
+    "wallet_address",
+    "chain",
+    "timestamp",
+    "timeframe",
+    "win_rate",
+    "pnl_summary"
+  ],
+  "properties": {
+    "wallet_address": {
+      "type": "string",
+      "description": "Wallet address"
+    },
+    "chain": {
+      "type": "string",
+      "description": "Primary blockchain network",
+      "enum": ["ethereum", "bsc", "solana", "polygon", "avalanche", "arbitrum", "base", "multi-chain"]
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Report generation timestamp in ISO 8601 UTC format"
+    },
+    "timeframe": {
+      "type": "object",
+      "properties": {
+        "from": {"type": "string", "format": "date-time"},
+        "to": {"type": "string", "format": "date-time"},
+        "period": {"type": "string", "enum": ["1d", "7d", "30d", "all-time"]}
+      }
+    },
+    "win_rate": {
+      "type": "object",
+      "required": ["overall", "by_timeframe"],
+      "properties": {
+        "overall": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Overall percentage of profitable trades"
+        },
+        "by_timeframe": {
+          "type": "object",
+          "properties": {
+            "1d": {"type": "number", "minimum": 0, "maximum": 1},
+            "7d": {"type": "number", "minimum": 0, "maximum": 1},
+            "30d": {"type": "number", "minimum": 0, "maximum": 1},
+            "all_time": {"type": "number", "minimum": 0, "maximum": 1}
+          }
+        },
+        "profitable_trades": {"type": "integer"},
+        "total_trades": {"type": "integer"}
+      }
+    },
+    "pnl_summary": {
+      "type": "object",
+      "required": ["realized_pnl", "total_volume"],
+      "properties": {
+        "realized_pnl": {
+          "type": "object",
+          "properties": {
+            "total_usd": {"type": "number"},
+            "average_per_trade_usd": {"type": "number"},
+            "best_trade_usd": {"type": "number"},
+            "worst_trade_usd": {"type": "number"}
+          }
+        },
+        "unrealized_pnl": {
+          "type": "object",
+          "properties": {
+            "total_usd": {"type": "number"},
+            "by_token": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "token_address": {"type": "string"},
+                  "token_symbol": {"type": "string"},
+                  "unrealized_pnl_usd": {"type": "number"},
+                  "entry_value_usd": {"type": "number"},
+                  "current_value_usd": {"type": "number"}
+                }
+              }
+            }
+          }
+        },
+        "total_volume": {
+          "type": "object",
+          "properties": {
+            "buy_volume_usd": {"type": "number"},
+            "sell_volume_usd": {"type": "number"},
+            "total_volume_usd": {"type": "number"}
+          }
+        }
+      }
+    },
+    "performance_metrics": {
+      "type": "object",
+      "properties": {
+        "average_trade_duration_hours": {"type": "number"},
+        "average_profit_per_trade_usd": {"type": "number"},
+        "trade_frequency_per_day": {"type": "number"},
+        "sharpe_ratio": {"type": "number"},
+        "max_drawdown": {"type": "number"}
+      }
+    },
+    "breakdown_by_token": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "token_address": {"type": "string"},
+          "token_symbol": {"type": "string"},
+          "chain": {"type": "string"},
+          "trade_count": {"type": "integer"},
+          "win_rate": {"type": "number"},
+          "total_pnl_usd": {"type": "number"},
+          "average_roi": {"type": "number"},
+          "volume_usd": {"type": "number"},
+          "first_trade": {"type": "string", "format": "date-time"},
+          "last_trade": {"type": "string", "format": "date-time"}
+        }
+      }
+    },
+    "breakdown_by_chain": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "chain": {"type": "string"},
+          "trade_count": {"type": "integer"},
+          "win_rate": {"type": "number"},
+          "total_pnl_usd": {"type": "number"},
+          "volume_usd": {"type": "number"}
+        }
+      }
+    },
+    "trades": {
+      "type": "array",
+      "description": "List of individual trades (limited to recent/top trades in API response)",
+      "items": {
+        "type": "object",
+        "properties": {
+          "trade_id": {"type": "string"},
+          "token_address": {"type": "string"},
+          "token_symbol": {"type": "string"},
+          "chain": {"type": "string"},
+          "entry_timestamp": {"type": "string", "format": "date-time"},
+          "exit_timestamp": {"type": ["string", "null"], "format": "date-time"},
+          "entry_price": {"type": "number"},
+          "exit_price": {"type": ["number", "null"]},
+          "quantity": {"type": "string"},
+          "entry_value_usd": {"type": "number"},
+          "exit_value_usd": {"type": ["number", "null"]},
+          "pnl_usd": {"type": ["number", "null"]},
+          "roi": {"type": ["number", "null"]},
+          "duration_hours": {"type": ["number", "null"]},
+          "status": {"type": "string", "enum": ["open", "closed"]}
+        }
+      }
+    },
+    "behavioral_patterns": {
+      "type": "object",
+      "properties": {
+        "pattern_tags": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Detected behavioral patterns (e.g., 'early_adopter', 'diamond_hands', 'swing_trader')"
+        },
+        "is_bot_like": {"type": "boolean"},
+        "is_smart_money": {"type": "boolean"},
+        "copies_wallet": {
+          "type": ["string", "null"],
+          "description": "Address of wallet this wallet frequently copies"
+        },
+        "wash_trading_score": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "related_wallets": {
+      "type": "array",
+      "description": "Wallets with correlated trading patterns or fund flows",
+      "items": {
+        "type": "object",
+        "properties": {
+          "wallet_address": {"type": "string"},
+          "relationship_type": {"type": "string", "enum": ["fund_flow", "similar_pattern", "coordinated"]},
+          "correlation_score": {"type": "number"},
+          "shared_tokens": {"type": "integer"}
+        }
+      }
+    },
+    "ranking": {
+      "type": "object",
+      "properties": {
+        "global_rank": {"type": ["integer", "null"]},
+        "chain_rank": {"type": ["integer", "null"]},
+        "percentile": {"type": "number"}
+      }
+    }
+  }
+}
