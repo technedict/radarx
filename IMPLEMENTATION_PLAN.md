@@ -236,31 +236,61 @@ RadarX is a production-grade memecoin analysis and wallet intelligence system th
 
 **Estimated Effort**: Completed
 
-### Phase 8: ML Models (TODO)
+### Phase 8: ML Models ✅ COMPLETED
 
-**Status**: 🔄 Planned
+**Status**: ✅ Complete
 
-**Tasks**:
-- [ ] Train gradient boosting models
-  - XGBoost for probability prediction
-  - LightGBM for risk scoring
-  - Feature engineering optimization
-- [ ] Implement temporal neural network
-  - TCN or Transformer architecture
-  - Social-price lead-lag patterns
-- [ ] Implement calibration pipeline
-  - Isotonic regression
-  - Platt scaling
-  - Confidence intervals
-- [ ] Add explainability
-  - SHAP value calculation
-  - Feature contribution ranking
-- [ ] Implement online learning
-  - Incremental updates
-  - Drift detection
-  - Adaptive retraining
+**Deliverables**:
+- [x] Probability predictor with ensemble models
+  - XGBoost models for each (horizon, multiplier) combination
+  - LightGBM models for improved performance
+  - Temporal attention network for time-series patterns
+  - Weighted ensemble combining all models
+- [x] Risk scorer with multi-component analysis
+  - 5 component scorers (rug, dev, distribution, social, liquidity)
+  - Composite risk score calculation
+  - Risk flag generation with human-readable descriptions
+- [x] Explainability model using SHAP
+  - SHAP-based feature importance
+  - Individual prediction explanations
+  - Feature contribution analysis (positive/negative)
+  - Human-readable descriptions for features
+- [x] Calibration pipeline
+  - Isotonic regression calibration
+  - Platt scaling alternative
+  - Expected Calibration Error (ECE) computation
+  - Calibration curve generation
+- [x] Online learning system
+  - Incremental model updates with partial_fit
+  - Weighted sampling (recent data prioritized)
+  - Performance tracking over time
+  - Automatic retraining triggers
+- [x] Drift detection
+  - Feature distribution drift (KS test)
+  - Prediction drift detection
+  - Performance drift monitoring
+  - Page-Hinkley test for change detection
+  - Drift type classification (gradual, sudden, incremental)
 
-**Estimated Effort**: 4-6 weeks
+**Files Created**:
+- src/radarx/models/__init__.py - Model module exports
+- src/radarx/models/probability_predictor.py - Ensemble probability prediction
+- src/radarx/models/risk_scorer.py - Multi-component risk assessment
+- src/radarx/models/explainer.py - SHAP-based explainability
+- src/radarx/models/calibrator.py - Probability calibration
+- src/radarx/models/online_learner.py - Continual learning
+- src/radarx/models/drift_detector.py - Concept drift detection
+- tests/unit/test_models.py - Comprehensive model tests
+
+**Key Features**:
+- **Probability Predictor**: Hybrid ensemble (XGBoost + LightGBM + Temporal NN) for multi-horizon, multi-multiplier predictions
+- **Risk Scorer**: 5-component risk analysis with weighted composite scoring and automatic flag generation
+- **Explainer**: SHAP integration for feature importance and human-readable explanations
+- **Calibrator**: Isotonic/Platt scaling with ECE metrics for probability calibration
+- **Online Learner**: Incremental updates, performance tracking, adaptive retraining triggers
+- **Drift Detector**: Multi-method drift detection (KS, Page-Hinkley) with confidence scoring
+
+**Estimated Effort**: Completed
 
 ### Phase 9: Wallet Analytics Engine (TODO)
 
@@ -391,20 +421,20 @@ RadarX is a production-grade memecoin analysis and wallet intelligence system th
 
 1. ✅ Complete foundation and basic infrastructure
 2. ✅ Implement schemas and API layer with mock data
-3. 🔄 Implement data ingestion layer (Phase 6)
-4. 🔄 Build feature engineering pipeline (Phase 7)
-5. 🔄 Train and deploy ML models (Phase 8)
-6. 🔄 Implement wallet analytics (Phase 9)
+3. ✅ Implement data ingestion layer (Phase 6)
+4. ✅ Build feature engineering pipeline (Phase 7)
+5. ✅ Train and deploy ML models (Phase 8)
+6. 🔄 Implement wallet analytics (Phase 9) - **NEXT**
 7. 🔄 Build backtesting framework (Phase 10)
 8. 🔄 Set up production infrastructure (Phase 11)
 9. 🔄 Polish and document (Phase 12)
 
 ## Current Status Summary
 
-**Completed**: 5 out of 12 phases (42%)
-**In Progress**: Phase 6 - Data Ingestion
-**Estimated Time to MVP**: 8-12 weeks
-**Estimated Time to Production**: 12-16 weeks
+**Completed**: 8 out of 12 phases (67%)
+**In Progress**: Phase 9 - Wallet Analytics Engine
+**Estimated Time to MVP**: 4-6 weeks
+**Estimated Time to Production**: 6-10 weeks
 
 ---
 
