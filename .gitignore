@@ -136,7 +136,16 @@ Thumbs.db
 # Project specific
 data/
 logs/
-models/
+# Ignore saved model files but not source code
+models/*.pkl
+models/*.pt
+models/*.h5
+models/*.onnx
+models/**/*.pkl
+models/**/*.pt
+models/**/*.h5
+models/**/*.onnx
+!src/radarx/models/
 *.db
 *.sqlite
 .cache/
