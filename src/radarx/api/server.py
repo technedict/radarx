@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Optional, List
 from fastapi import FastAPI, HTTPException, Query, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, PlainTextResponse
 import uvicorn
 
 from radarx.config import settings
@@ -12,6 +12,19 @@ from radarx.schemas.token import TokenScore
 from radarx.schemas.wallet import WalletReport
 from radarx.api.services import TokenScoringService, WalletAnalyticsService
 from radarx.api.rate_limiter import RateLimiter
+
+# Optional Prometheus metrics
+try:
+    from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
+    PROMETHEUS_AVAILABLE = True
+    
+    # Define metrics
+    REQUEST_COUNT = Counter('radarx_requests_total', 'Total requests', ['endpoint', 'method'])
+    REQUEST_DURATION = Histogram('radarx_request_duration_seconds', 'Request duration', ['endpoint'])
+    PREDICTION_COUNT = Counter('radarx_predictions_total', 'Total predictions', ['chain'])
+    ERROR_COUNT = Counter('radarx_errors_total', 'Total errors', ['endpoint', 'error_type'])
+except ImportError:
+    PROMETHEUS_AVAILABLE = False
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -265,6 +278,32 @@ async def subscribe_to_alerts(
         "subscription_id": "sub_" + datetime.utcnow().strftime("%Y%m%d%H%M%S"),
         "created_at": datetime.utcnow().isoformat()
     }
+
+
+@app.get("/metrics")
+async def metrics():
+    """
+    Prometheus metrics endpoint.
+    
+    Provides observability metrics for monitoring:
+    - Request counts by endpoint
+    - Request durations
+    - Prediction counts by chain
+    - Error counts by type
+    
+    Returns:
+        Prometheus-formatted metrics
+    """
+    if not PROMETHEUS_AVAILABLE:
+        raise HTTPException(
+            status_code=501,
+            detail="Prometheus client not installed. Install with: pip install prometheus-client"
+        )
+    
+    return PlainTextResponse(
+        generate_latest(),
+        media_type=CONTENT_TYPE_LATEST
+    )
 
 
 def main():
