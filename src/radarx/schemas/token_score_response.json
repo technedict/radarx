@@ -1,0 +1,286 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://radarx.io/schemas/token-score-response.json",
+  "title": "Token Score Response",
+  "description": "Complete API response for token scoring with probability heatmaps, risk scores, and explanations",
+  "type": "object",
+  "required": [
+    "token_address",
+    "chain",
+    "timestamp",
+    "probability_heatmap",
+    "risk_score",
+    "explanations"
+  ],
+  "properties": {
+    "token_address": {
+      "type": "string",
+      "description": "Token contract address"
+    },
+    "chain": {
+      "type": "string",
+      "description": "Blockchain network",
+      "enum": ["ethereum", "bsc", "solana", "polygon", "avalanche", "arbitrum", "base"]
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Scoring timestamp in ISO 8601 UTC format"
+    },
+    "token_metadata": {
+      "type": "object",
+      "properties": {
+        "name": {"type": "string"},
+        "symbol": {"type": "string"},
+        "decimals": {"type": "integer"},
+        "total_supply": {"type": "string"},
+        "contract_created_at": {"type": "string", "format": "date-time"}
+      }
+    },
+    "probability_heatmap": {
+      "type": "object",
+      "description": "Probability distributions for reaching multiplier targets across time horizons",
+      "required": ["horizons"],
+      "properties": {
+        "horizons": {
+          "type": "object",
+          "properties": {
+            "24h": {
+              "$ref": "#/definitions/horizon_probabilities"
+            },
+            "7d": {
+              "$ref": "#/definitions/horizon_probabilities"
+            },
+            "30d": {
+              "$ref": "#/definitions/horizon_probabilities"
+            }
+          }
+        }
+      }
+    },
+    "risk_score": {
+      "type": "object",
+      "required": ["composite_score", "components"],
+      "properties": {
+        "composite_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Overall risk score (0=lowest risk, 100=highest risk)"
+        },
+        "components": {
+          "type": "object",
+          "properties": {
+            "rug_risk": {"type": "number", "minimum": 0, "maximum": 100},
+            "dev_risk": {"type": "number", "minimum": 0, "maximum": 100},
+            "distribution_risk": {"type": "number", "minimum": 0, "maximum": 100},
+            "social_manipulation_risk": {"type": "number", "minimum": 0, "maximum": 100},
+            "liquidity_risk": {"type": "number", "minimum": 0, "maximum": 100}
+          }
+        },
+        "risk_flags": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    },
+    "explanations": {
+      "type": "object",
+      "description": "Top contributing features for each prediction",
+      "properties": {
+        "probability_2x_24h": {
+          "$ref": "#/definitions/explanation"
+        },
+        "probability_10x_7d": {
+          "$ref": "#/definitions/explanation"
+        },
+        "risk_score": {
+          "$ref": "#/definitions/explanation"
+        }
+      }
+    },
+    "features": {
+      "type": "object",
+      "description": "Raw feature vectors used for scoring",
+      "properties": {
+        "token_features": {"$ref": "#/definitions/token_features"},
+        "liquidity_features": {"$ref": "#/definitions/liquidity_features"},
+        "holder_features": {"$ref": "#/definitions/holder_features"},
+        "social_features": {"$ref": "#/definitions/social_features"},
+        "dev_features": {"$ref": "#/definitions/dev_features"}
+      }
+    },
+    "timelines": {
+      "type": "object",
+      "description": "Event timelines for visualization",
+      "properties": {
+        "liquidity_events": {
+          "type": "array",
+          "items": {"$ref": "#/definitions/liquidity_event"}
+        },
+        "social_mentions": {
+          "type": "array",
+          "items": {"$ref": "#/definitions/social_mention"}
+        },
+        "dev_transfers": {
+          "type": "array",
+          "items": {"$ref": "#/definitions/transfer_event"}
+        }
+      }
+    },
+    "top_holders": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "address": {"type": "string"},
+          "balance": {"type": "string"},
+          "percentage": {"type": "number"},
+          "is_contract": {"type": "boolean"},
+          "flags": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "model_metadata": {
+      "type": "object",
+      "properties": {
+        "model_version": {"type": "string"},
+        "feature_version": {"type": "string"},
+        "calibration_date": {"type": "string", "format": "date-time"}
+      }
+    }
+  },
+  "definitions": {
+    "horizon_probabilities": {
+      "type": "object",
+      "properties": {
+        "2x": {
+          "$ref": "#/definitions/probability_with_confidence"
+        },
+        "5x": {
+          "$ref": "#/definitions/probability_with_confidence"
+        },
+        "10x": {
+          "$ref": "#/definitions/probability_with_confidence"
+        },
+        "20x": {
+          "$ref": "#/definitions/probability_with_confidence"
+        },
+        "50x": {
+          "$ref": "#/definitions/probability_with_confidence"
+        }
+      }
+    },
+    "probability_with_confidence": {
+      "type": "object",
+      "required": ["probability", "confidence_interval"],
+      "properties": {
+        "probability": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Point probability estimate"
+        },
+        "confidence_interval": {
+          "type": "object",
+          "properties": {
+            "lower": {"type": "number", "minimum": 0, "maximum": 1},
+            "upper": {"type": "number", "minimum": 0, "maximum": 1},
+            "confidence_level": {"type": "number", "default": 0.95}
+          }
+        }
+      }
+    },
+    "explanation": {
+      "type": "object",
+      "properties": {
+        "top_features": {
+          "type": "array",
+          "maxItems": 5,
+          "items": {
+            "type": "object",
+            "properties": {
+              "feature_name": {"type": "string"},
+              "contribution": {"type": "number"},
+              "direction": {"type": "string", "enum": ["positive", "negative"]},
+              "description": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "token_features": {
+      "type": "object",
+      "properties": {
+        "market_cap": {"type": "number"},
+        "age_hours": {"type": "number"},
+        "volume_24h": {"type": "number"},
+        "price_change_24h": {"type": "number"},
+        "is_paid_listing": {"type": "boolean"}
+      }
+    },
+    "liquidity_features": {
+      "type": "object",
+      "properties": {
+        "total_liquidity_usd": {"type": "number"},
+        "liquidity_depth_1pct": {"type": "number"},
+        "liquidity_depth_5pct": {"type": "number"},
+        "lp_locked": {"type": "boolean"},
+        "lp_lock_expires_at": {"type": ["string", "null"], "format": "date-time"}
+      }
+    },
+    "holder_features": {
+      "type": "object",
+      "properties": {
+        "total_holders": {"type": "integer"},
+        "holder_gini": {"type": "number"},
+        "top10_concentration": {"type": "number"},
+        "holder_growth_24h": {"type": "number"}
+      }
+    },
+    "social_features": {
+      "type": "object",
+      "properties": {
+        "mention_volume_24h": {"type": "integer"},
+        "mention_velocity_1h": {"type": "number"},
+        "sentiment_score": {"type": "number"},
+        "kol_mentions": {"type": "integer"}
+      }
+    },
+    "dev_features": {
+      "type": "object",
+      "properties": {
+        "dev_holding_percentage": {"type": "number"},
+        "dev_sells_24h": {"type": "number"},
+        "contract_verified": {"type": "boolean"}
+      }
+    },
+    "liquidity_event": {
+      "type": "object",
+      "properties": {
+        "timestamp": {"type": "string", "format": "date-time"},
+        "event_type": {"type": "string", "enum": ["add", "remove", "lock", "unlock"]},
+        "amount_usd": {"type": "number"}
+      }
+    },
+    "social_mention": {
+      "type": "object",
+      "properties": {
+        "timestamp": {"type": "string", "format": "date-time"},
+        "source": {"type": "string", "enum": ["twitter", "telegram", "reddit", "discord"]},
+        "mention_count": {"type": "integer"},
+        "sentiment": {"type": "number"}
+      }
+    },
+    "transfer_event": {
+      "type": "object",
+      "properties": {
+        "timestamp": {"type": "string", "format": "date-time"},
+        "from_address": {"type": "string"},
+        "to_address": {"type": "string"},
+        "amount": {"type": "string"},
+        "usd_value": {"type": "number"}
+      }
+    }
+  }
+}
