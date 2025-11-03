@@ -380,6 +380,96 @@ class SmartWalletFinder:
         
         return scored_wallets[:top_k]
     
+    def find_smart_wallets_with_advanced_ml(
+        self,
+        token_address: str,
+        chain: str = "ethereum",
+        window_days: int = 30,
+        top_k: int = 100,
+        enable_granger: bool = True,
+        enable_embeddings: bool = True,
+        enable_counterfactual: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Find smart wallets with advanced ML features enabled.
+        
+        Args:
+            token_address: Token contract address
+            chain: Blockchain network
+            window_days: Analysis window in days
+            top_k: Number of top wallets to return
+            enable_granger: Enable Granger causality analysis
+            enable_embeddings: Enable behavior embeddings
+            enable_counterfactual: Enable counterfactual impact analysis
+            
+        Returns:
+            Enhanced results with ML insights
+        """
+        from radarx.smart_wallet_finder.advanced_ml import (
+            GrangerCausalityAnalyzer,
+            WalletBehaviorEmbedder,
+            CounterfactualAnalyzer,
+        )
+        
+        # Get base results
+        base_results = self.find_smart_wallets(
+            token_address=token_address,
+            chain=chain,
+            window_days=window_days,
+            top_k=top_k,
+        )
+        
+        # Initialize advanced analyzers
+        granger_analyzer = GrangerCausalityAnalyzer() if enable_granger else None
+        embedder = WalletBehaviorEmbedder() if enable_embeddings else None
+        counterfactual = CounterfactualAnalyzer() if enable_counterfactual else None
+        
+        # Enhance each wallet with advanced features
+        enhanced_wallets = []
+        
+        for wallet in base_results["ranked_wallets"]:
+            wallet_address = wallet["wallet_address"]
+            
+            # Get wallet trades from metadata
+            wallet_trades = wallet.get("metadata", {}).get("trades", [])
+            
+            enhanced = wallet.copy()
+            enhanced["advanced_features"] = {}
+            
+            # Granger causality
+            if granger_analyzer and wallet_trades:
+                price_timeline = base_results.get("metadata", {}).get("price_timeline", [])
+                causality = granger_analyzer.analyze_wallet_price_causality(
+                    wallet_trades, price_timeline
+                )
+                enhanced["advanced_features"]["granger_causality"] = causality
+            
+            # Behavior embeddings
+            if embedder and wallet_trades:
+                embedding = embedder.embed_wallet_sequence(wallet_trades)
+                enhanced["advanced_features"]["behavior_embedding"] = embedding.tolist()
+            
+            # Counterfactual impact
+            if counterfactual and wallet_trades:
+                all_trades = base_results.get("metadata", {}).get("all_trades", [])
+                price_timeline = base_results.get("metadata", {}).get("price_timeline", [])
+                impact = counterfactual.estimate_wallet_impact(
+                    wallet_trades, all_trades, price_timeline
+                )
+                enhanced["advanced_features"]["counterfactual_impact"] = impact
+            
+            enhanced_wallets.append(enhanced)
+        
+        return {
+            **base_results,
+            "ranked_wallets": enhanced_wallets,
+            "ml_features_enabled": {
+                "granger_causality": enable_granger,
+                "behavior_embeddings": enable_embeddings,
+                "counterfactual_analysis": enable_counterfactual,
+            },
+        }
+    
     def _generate_explanations(
         self,
         ranked_wallets: List[Tuple[str, float, Dict[str, Any]]],

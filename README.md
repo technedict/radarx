@@ -16,8 +16,22 @@ RadarX is a comprehensive memecoin analysis and wallet intelligence platform tha
 
 ### Smart Wallet Finder ⭐ NEW
 - **Smart Money Discovery**: Identify probable smart-money wallets that traded a given token
-- **Multi-Chain Support**: Full support for Ethereum, BSC, and **Solana** (with production-ready Solscan integration)
+- **Multi-Chain Support**: Full support for Ethereum, BSC, and **Solana** (with production-ready Solscan + Birdeye integration)
 - **Multi-Signal Detection**: Event timing (pre-pump/pre-dump), profitability metrics, graph analysis, and behavioral patterns
+- **Advanced ML Features** 🎯 NEW:
+  - **Granger Causality**: Detect wallets that lead price movements with statistical significance
+  - **Behavior Embeddings**: Vector representations of trading patterns for similarity analysis
+  - **Counterfactual Analysis**: Estimate individual wallet impact on price movements
+  - **Temporal GNN**: Graph neural networks for evolving fund flow analysis
+- **Backtesting Framework** 🎯 NEW:
+  - **Precision@K Validation**: Measure prediction accuracy at different thresholds
+  - **Simulated Portfolio Returns**: Test strategies by following top-K wallets
+  - **Walk-Forward Validation**: Time-series cross-validation with rolling windows
+  - **Performance Metrics**: Sharpe ratio, max drawdown, win rate tracking
+- **Real-Time Streaming** 🎯 NEW:
+  - **WebSocket Support**: Live trade monitoring via Helius, Alchemy, QuickNode
+  - **Event-Driven Architecture**: Real-time signal updates as trades occur
+  - **Live Notifications**: Instant alerts for smart wallet activity
 - **Risk Filtering**: Automatic detection and filtering of wash trading, bots, and suspicious activity
 - **Explainable Rankings**: Detailed explanations for each wallet's smart-money score with contributing signals
 - **Bulk Scanning**: Analyze multiple tokens simultaneously and produce global leaderboards

@@ -53,6 +53,7 @@ class SolanaDataFetcher(DataFetcher):
         # API endpoints
         self.solscan_base_url = "https://pro-api.solscan.io/v1.0"
         self.jupiter_price_url = "https://price.jup.ag/v4"
+        self.birdeye_base_url = "https://public-api.birdeye.so"
         self.helius_rpc_url = f"https://rpc.helius.xyz/?api-key={self.helius_api_key}" if self.helius_api_key else "https://api.mainnet-beta.solana.com"
         
         # HTTP clients
@@ -267,9 +268,46 @@ class SolanaDataFetcher(DataFetcher):
         return trades
     
     def _identify_dex(self, transfer: Dict[str, Any]) -> str:
-        """Identify which DEX was used based on transfer data."""
-        # Check program ID if available
-        # This is a simplified version - production would check program logs
+        """
+        Identify which DEX was used based on transfer data.
+        
+        Enhanced version that checks program IDs and instruction data.
+        """
+        # Check if program ID is available
+        program_id = transfer.get("programId") or transfer.get("program")
+        
+        if program_id:
+            # Match against known DEX program IDs
+            for dex_name, dex_program_id in self.dex_program_ids.items():
+                if program_id == dex_program_id:
+                    return dex_name
+        
+        # Check instruction data for DEX-specific patterns
+        instruction_data = transfer.get("instructionData") or transfer.get("data")
+        if instruction_data:
+            # Jupiter swap instruction typically starts with specific discriminator
+            if instruction_data.startswith("e445a52e51cb9a1d"):  # Jupiter swap
+                return "jupiter"
+            # Raydium swap instruction
+            elif instruction_data.startswith("09"):  # Raydium swap instruction ID
+                return "raydium"
+            # Orca swap instruction
+            elif instruction_data.startswith("f8c69e91e17587c8"):  # Orca whirlpool swap
+                return "orca"
+        
+        # Check transaction logs for DEX mentions
+        logs = transfer.get("logs", [])
+        for log in logs:
+            log_lower = log.lower()
+            if "jupiter" in log_lower:
+                return "jupiter"
+            elif "raydium" in log_lower:
+                return "raydium"
+            elif "orca" in log_lower:
+                return "orca"
+            elif "serum" in log_lower:
+                return "serum"
+        
         return "unknown_dex"
     
     def _fetch_price_timeline(
@@ -305,17 +343,26 @@ class SolanaDataFetcher(DataFetcher):
         """
         Async fetch of Solana price timeline.
         
-        For production, would integrate with historical price APIs.
-        Currently uses Jupiter for current price and estimates historical.
+        Uses Birdeye API for historical price data.
+        Falls back to Jupiter current price if Birdeye unavailable.
         """
         timeline = []
         
         try:
-            # Fetch current price from Jupiter
+            # Try to fetch historical data from Birdeye
+            timeline = await self._fetch_birdeye_historical_prices(
+                token_address, start_time, end_time, interval_minutes
+            )
+            
+            if timeline:
+                logger.info(f"Fetched {len(timeline)} historical price points from Birdeye")
+                return timeline
+            
+            # Fallback: Use Jupiter current price
+            logger.warning("Birdeye historical data unavailable, using Jupiter fallback")
             current_price = await self._fetch_jupiter_price(token_address)
             
-            # For historical data, would use Birdeye, Dexscreener, or similar
-            # For now, generate timeline with current price as reference
+            # Generate timeline with current price as reference
             current_time = end_time
             time_delta = timedelta(minutes=interval_minutes)
             
@@ -332,6 +379,81 @@ class SolanaDataFetcher(DataFetcher):
             logger.error(f"Error fetching Solana price timeline: {e}")
         
         return timeline
+    
+    async def _fetch_birdeye_historical_prices(
+        self,
+        token_address: str,
+        start_time: datetime,
+        end_time: datetime,
+        interval_minutes: int = 15,
+    ) -> List[Dict[str, Any]]:
+        """
+        Fetch historical price data from Birdeye API.
+        
+        Args:
+            token_address: SPL token mint address
+            start_time: Start of time range
+            end_time: End of time range
+            interval_minutes: Interval between data points
+            
+        Returns:
+            List of price points with timestamp and price
+        """
+        cache_key = f"solana:birdeye:{token_address}:{start_time.date()}:{end_time.date()}"
+        cached = await self.cache.get(cache_key)
+        if cached:
+            return cached
+        
+        try:
+            # Map interval to Birdeye's time_from/time_to format
+            url = f"{self.birdeye_base_url}/defi/history_price"
+            
+            params = {
+                "address": token_address,
+                "address_type": "token",
+                "type": self._get_birdeye_interval(interval_minutes),
+                "time_from": int(start_time.timestamp()),
+                "time_to": int(end_time.timestamp()),
+            }
+            
+            response = await self.http_client.get(url, params=params)
+            response.raise_for_status()
+            
+            data = response.json()
+            
+            if not data.get("success") or not data.get("data"):
+                return []
+            
+            items = data["data"].get("items", [])
+            
+            timeline = []
+            for item in items:
+                timeline.append({
+                    "timestamp": datetime.fromtimestamp(item["unixTime"]).isoformat(),
+                    "price": float(item["value"]),
+                })
+            
+            # Cache for 5 minutes
+            await self.cache.set(cache_key, timeline, ttl=300)
+            
+            return timeline
+            
+        except Exception as e:
+            logger.error(f"Birdeye API error: {e}")
+            return []
+    
+    def _get_birdeye_interval(self, interval_minutes: int) -> str:
+        """Convert interval minutes to Birdeye interval type."""
+        if interval_minutes <= 5:
+            return "1m"
+        elif interval_minutes <= 15:
+            return "15m"
+        elif interval_minutes <= 60:
+            return "1H"
+        elif interval_minutes <= 240:
+            return "4H"
+        else:
+            return "1D"
     
     async def _fetch_jupiter_price(self, token_address: str) -> float:
         """
