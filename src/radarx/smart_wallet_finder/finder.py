@@ -218,7 +218,7 @@ class SmartWalletFinder:
             "chain": chain,
             "score": score,
             "trades": data.get("trades", []),
-            "realized_roi": signals.get("profitability", {}).get("realized_roi", 0.0),
+            "realized_roi": signals.get("profitability", {}).get("avg_roi", 0.0),
             "win_rate": signals.get("profitability", {}).get("win_rate", 0.0),
             "graph_neighbors": data.get("graph_neighbors", []),
             "explanation": explanation,
