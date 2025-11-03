@@ -60,6 +60,8 @@ class ValidationResult:
 
 def validate_api_endpoints(src_path: Path, result: ValidationResult):
     """Validate API endpoints mentioned in README exist."""
+    import re
+    
     server_file = src_path / "radarx" / "api" / "server.py"
     
     if not server_file.exists():
@@ -79,11 +81,13 @@ def validate_api_endpoints(src_path: Path, result: ValidationResult):
     ]
     
     for endpoint, function in endpoints:
-        # More flexible matching - look for endpoint in decorator
-        if f'"{endpoint}"' in content and '@app.' in content:
+        # Use regex to match FastAPI decorator with endpoint
+        pattern = r'@app\.(get|post|put|delete|patch)\(["\']' + re.escape(endpoint) + r'["\']'
+        if re.search(pattern, content):
             result.add_pass(f"Endpoint {endpoint}", f"Implemented as {function}()")
         else:
             result.add_fail(f"Endpoint {endpoint}", f"Not found in server.py")
+
 
 
 def validate_cli_commands(src_path: Path, result: ValidationResult):

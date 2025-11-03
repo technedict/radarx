@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Optional, List
 import json
 import pickle
+import numpy as np
 
 from radarx.models.probability_predictor import ProbabilityPredictor
 from radarx.models.risk_scorer import RiskScorer
@@ -43,8 +44,6 @@ def load_training_data(data_path: Optional[str] = None) -> tuple:
         Tuple of (features, labels)
     """
     logger.info("Loading training data...")
-    
-    import numpy as np
     
     if data_path and Path(data_path).exists():
         logger.info(f"Loading data from {data_path}")

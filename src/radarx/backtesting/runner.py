@@ -6,10 +6,11 @@ Command-line interface for running backtests on historical token data.
 
 import argparse
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
 import json
+import random
 
 from radarx.backtesting.engine import BacktestEngine
 from radarx.backtesting.strategy import StrategySimulator
@@ -44,9 +45,6 @@ def load_sample_data(start_date: datetime, end_date: datetime) -> list:
     current_date = start_date
     
     # Generate some sample data points
-    import random
-    from datetime import timedelta
-    
     while current_date <= end_date:
         sample_data.append({
             'timestamp': current_date.isoformat() + 'Z',
