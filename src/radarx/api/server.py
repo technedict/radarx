@@ -12,6 +12,15 @@ from radarx.schemas.token import TokenScore
 from radarx.schemas.wallet import WalletReport
 from radarx.api.services import TokenScoringService, WalletAnalyticsService
 from radarx.api.rate_limiter import RateLimiter
+from radarx.smart_wallet_finder.schemas import (
+    SmartWalletFindRequest,
+    SmartWalletFindResponse,
+    WalletProfileRequest,
+    WalletProfileResponse,
+    BulkScanRequest,
+    BulkScanResponse,
+)
+from radarx.smart_wallet_finder.finder import SmartWalletFinder
 
 # Optional Prometheus metrics
 try:
@@ -46,6 +55,7 @@ app.add_middleware(
 token_service = TokenScoringService()
 wallet_service = WalletAnalyticsService()
 rate_limiter = RateLimiter()
+smart_wallet_finder = SmartWalletFinder()
 
 
 @app.get("/")
@@ -278,6 +288,148 @@ async def subscribe_to_alerts(
         "subscription_id": "sub_" + datetime.utcnow().strftime("%Y%m%d%H%M%S"),
         "created_at": datetime.utcnow().isoformat()
     }
+
+
+@app.post("/smart-wallets/find", response_model=SmartWalletFindResponse)
+async def find_smart_wallets(request: SmartWalletFindRequest):
+    """
+    Discover probable smart-money wallets for a given token.
+    
+    This endpoint analyzes trading activity and identifies wallets that exhibit
+    smart-money characteristics through:
+    - Event timing (pre-pump/pre-dump detection)
+    - Profitability metrics (win rate, ROI)
+    - Transaction graph analysis
+    - Behavioral patterns
+    - Risk filtering
+    
+    Args:
+        request: Smart wallet find request parameters
+        
+    Returns:
+        Ranked list of smart wallets with scores and explanations
+    """
+    try:
+        result = smart_wallet_finder.find_smart_wallets(
+            token_address=request.token_address,
+            chain=request.chain,
+            window_days=request.window_days,
+            min_trade_size_usd=request.min_trade_size_usd,
+            min_holdings_usd=request.min_holdings_usd,
+            include_internal_transfers=request.include_internal_transfers,
+            top_k=request.top_k,
+            min_confidence=request.min_confidence,
+        )
+        
+        return result
+        
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
+
+
+@app.post("/smart-wallets/profile", response_model=WalletProfileResponse)
+async def get_smart_wallet_profile(request: WalletProfileRequest):
+    """
+    Get detailed profile for a specific wallet and token.
+    
+    Returns comprehensive analytics including:
+    - All trades for the token
+    - Realized ROI and win rate
+    - Graph neighbors and connections
+    - Smart-money score
+    - Detailed explanation of signals
+    
+    Args:
+        request: Wallet profile request parameters
+        
+    Returns:
+        Detailed wallet profile with trades and explanations
+    """
+    try:
+        result = smart_wallet_finder.get_wallet_profile(
+            wallet_address=request.wallet_address,
+            token_address=request.token_address,
+            chain=request.chain,
+            window_days=request.window_days,
+        )
+        
+        return result
+        
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
+
+
+@app.post("/smart-wallets/bulk-scan", response_model=BulkScanResponse)
+async def bulk_scan_tokens(request: BulkScanRequest):
+    """
+    Scan multiple tokens for smart wallets and produce aggregate leaderboard.
+    
+    Analyzes multiple tokens in parallel and produces:
+    - Top smart wallets per token
+    - Global leaderboard across all tokens
+    - Aggregated statistics
+    
+    Args:
+        request: Bulk scan request parameters
+        
+    Returns:
+        Results per token and global leaderboard
+    """
+    try:
+        results = []
+        all_wallets = {}
+        
+        # Scan each token
+        for token_address in request.token_addresses:
+            token_result = smart_wallet_finder.find_smart_wallets(
+                token_address=token_address,
+                chain=request.chain,
+                window_days=request.window_days,
+                top_k=request.top_k_per_token,
+                min_confidence=request.min_confidence,
+            )
+            
+            results.append({
+                "token_address": token_address,
+                "top_wallets": token_result["ranked_wallets"],
+                "avg_score": token_result["summary_stats"].get("avg_smart_money_score", 0),
+            })
+            
+            # Collect all wallets for global leaderboard
+            for wallet in token_result["ranked_wallets"]:
+                addr = wallet["wallet_address"]
+                score = wallet["smart_money_score"]
+                
+                if addr not in all_wallets or all_wallets[addr]["smart_money_score"] < score:
+                    all_wallets[addr] = wallet
+        
+        # Create global leaderboard
+        leaderboard = sorted(
+            all_wallets.values(),
+            key=lambda w: w["smart_money_score"],
+            reverse=True
+        )[:100]  # Top 100 globally
+        
+        # Re-rank
+        for i, wallet in enumerate(leaderboard, 1):
+            wallet["rank"] = i
+        
+        return {
+            "chain": request.chain,
+            "tokens_analyzed": len(request.token_addresses),
+            "timestamp": datetime.utcnow().isoformat(),
+            "results": results,
+            "leaderboard": leaderboard,
+        }
+        
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
 
 
 @app.get("/metrics")

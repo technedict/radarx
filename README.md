@@ -14,6 +14,29 @@ RadarX is a comprehensive memecoin analysis and wallet intelligence platform tha
 - **Explainable AI**: Top contributing features for each prediction with direction and impact
 - **Real-time Analysis**: Live scoring based on current market conditions and on-chain data
 
+### Smart Wallet Finder ⭐ NEW
+- **Smart Money Discovery**: Identify probable smart-money wallets that traded a given token
+- **Multi-Chain Support**: Full support for Ethereum, BSC, and **Solana** (with production-ready Solscan + Birdeye integration)
+- **Multi-Signal Detection**: Event timing (pre-pump/pre-dump), profitability metrics, graph analysis, and behavioral patterns
+- **Advanced ML Features** 🎯 NEW:
+  - **Granger Causality**: Detect wallets that lead price movements with statistical significance
+  - **Behavior Embeddings**: Vector representations of trading patterns for similarity analysis
+  - **Counterfactual Analysis**: Estimate individual wallet impact on price movements
+  - **Temporal GNN**: Graph neural networks for evolving fund flow analysis
+- **Backtesting Framework** 🎯 NEW:
+  - **Precision@K Validation**: Measure prediction accuracy at different thresholds
+  - **Simulated Portfolio Returns**: Test strategies by following top-K wallets
+  - **Walk-Forward Validation**: Time-series cross-validation with rolling windows
+  - **Performance Metrics**: Sharpe ratio, max drawdown, win rate tracking
+- **Real-Time Streaming** 🎯 NEW:
+  - **WebSocket Support**: Live trade monitoring via Helius, Alchemy, QuickNode
+  - **Event-Driven Architecture**: Real-time signal updates as trades occur
+  - **Live Notifications**: Instant alerts for smart wallet activity
+- **Risk Filtering**: Automatic detection and filtering of wash trading, bots, and suspicious activity
+- **Explainable Rankings**: Detailed explanations for each wallet's smart-money score with contributing signals
+- **Bulk Scanning**: Analyze multiple tokens simultaneously and produce global leaderboards
+- **Wallet Profiling**: Deep-dive analysis of individual wallet-token pairs with trade history and network connections
+
 ### Wallet Analytics
 - **Win Rate Tracking**: Percentage of profitable trades across multiple timeframes
 - **PnL Analysis**: Realized and unrealized profit/loss with detailed breakdowns
@@ -119,6 +142,73 @@ curl "http://localhost:8000/score/token?address=0x1234...&chain=ethereum&horizon
 ```
 
 **Response**: Complete token analysis including probability heatmap, risk score, feature contributions, and optional raw features/timelines.
+
+### Smart Wallet Finder
+
+**POST** `/smart-wallets/find`
+
+Discover probable smart-money wallets for a token.
+
+```bash
+# Ethereum example
+curl -X POST "http://localhost:8000/smart-wallets/find" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "token_address": "0x1234...",
+    "chain": "ethereum",
+    "window_days": 30,
+    "top_k": 100,
+    "min_confidence": 0.5
+  }'
+
+# Solana example
+curl -X POST "http://localhost:8000/smart-wallets/find" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "token_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "chain": "solana",
+    "window_days": 30,
+    "top_k": 100,
+    "min_confidence": 0.5
+  }'
+```
+
+**Response**: Ranked list of smart wallets with scores, key metrics, and explanations.
+
+**POST** `/smart-wallets/profile`
+
+Get detailed profile for a specific wallet and token.
+
+```bash
+curl -X POST "http://localhost:8000/smart-wallets/profile" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "wallet_address": "0xabcd...",
+    "token_address": "0x1234...",
+    "chain": "ethereum",
+    "window_days": 30
+  }'
+```
+
+**Response**: Detailed wallet profile with trades, ROI, graph neighbors, and explanation.
+
+**POST** `/smart-wallets/bulk-scan`
+
+Scan multiple tokens for smart wallets.
+
+```bash
+curl -X POST "http://localhost:8000/smart-wallets/bulk-scan" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "token_addresses": ["0x1111...", "0x2222...", "0x3333..."],
+    "chain": "ethereum",
+    "window_days": 30,
+    "top_k_per_token": 10,
+    "min_confidence": 0.6
+  }'
+```
+
+**Response**: Results per token and global leaderboard across all tokens.
 
 ### Wallet Report
 
