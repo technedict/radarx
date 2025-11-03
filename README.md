@@ -16,6 +16,7 @@ RadarX is a comprehensive memecoin analysis and wallet intelligence platform tha
 
 ### Smart Wallet Finder ⭐ NEW
 - **Smart Money Discovery**: Identify probable smart-money wallets that traded a given token
+- **Multi-Chain Support**: Full support for Ethereum, BSC, and **Solana** (with production-ready Solscan integration)
 - **Multi-Signal Detection**: Event timing (pre-pump/pre-dump), profitability metrics, graph analysis, and behavioral patterns
 - **Risk Filtering**: Automatic detection and filtering of wash trading, bots, and suspicious activity
 - **Explainable Rankings**: Detailed explanations for each wallet's smart-money score with contributing signals
@@ -135,11 +136,23 @@ curl "http://localhost:8000/score/token?address=0x1234...&chain=ethereum&horizon
 Discover probable smart-money wallets for a token.
 
 ```bash
+# Ethereum example
 curl -X POST "http://localhost:8000/smart-wallets/find" \
   -H "Content-Type: application/json" \
   -d '{
     "token_address": "0x1234...",
     "chain": "ethereum",
+    "window_days": 30,
+    "top_k": 100,
+    "min_confidence": 0.5
+  }'
+
+# Solana example
+curl -X POST "http://localhost:8000/smart-wallets/find" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "token_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "chain": "solana",
     "window_days": 30,
     "top_k": 100,
     "min_confidence": 0.5

@@ -44,6 +44,8 @@ class Settings(BaseSettings):
     etherscan_api_key: str = ""
     bscscan_api_key: str = ""
     solscan_api_key: str = ""
+    helius_api_key: str = ""
+    quicknode_url: str = ""
     alchemy_api_key: str = ""
     
     # Social APIs

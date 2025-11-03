@@ -104,6 +104,11 @@ class SmartWalletFinder:
             f"window={window_days}d, top_k={top_k}"
         )
         
+        # Create chain-specific data fetcher if not already set
+        if self.data_fetcher.__class__.__name__ == 'DataFetcher':
+            from radarx.smart_wallet_finder.data_fetcher import DataFetcher
+            self.data_fetcher = DataFetcher.create_for_chain(chain)
+        
         # Step 1: Fetch data
         logger.info("Step 1: Fetching on-chain and price data")
         data = self._fetch_data(

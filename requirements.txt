@@ -37,6 +37,7 @@ requests==2.31.0
 # Blockchain and web3
 web3==6.11.3
 solana==0.30.2
+base58==2.1.1
 python-dotenv==1.0.0
 
 # Social media APIs

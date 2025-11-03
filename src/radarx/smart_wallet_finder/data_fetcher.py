@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 class DataFetcher:
     """
     Fetches data from multiple sources for smart wallet analysis.
+    Supports multiple chains through chain-specific implementations.
     """
     
     def __init__(self):
@@ -23,6 +24,34 @@ class DataFetcher:
         self.blockchain_clients = {}
         self.dex_client = None
         self.risk_client = None
+    
+    @staticmethod
+    def create_for_chain(chain: str, **kwargs) -> 'DataFetcher':
+        """
+        Factory method to create chain-specific data fetcher.
+        
+        Args:
+            chain: Blockchain network (ethereum, bsc, solana, etc.)
+            **kwargs: Additional arguments for chain-specific fetchers
+            
+        Returns:
+            Chain-specific DataFetcher instance
+        """
+        chain_lower = chain.lower()
+        
+        if chain_lower == "solana":
+            from radarx.smart_wallet_finder.solana_data_fetcher import SolanaDataFetcher
+            return SolanaDataFetcher(**kwargs)
+        elif chain_lower in ["ethereum", "eth"]:
+            # Use default implementation or create EthereumDataFetcher
+            return DataFetcher()
+        elif chain_lower in ["bsc", "binance"]:
+            # Use default implementation or create BSCDataFetcher
+            return DataFetcher()
+        else:
+            # Default implementation for other chains
+            logger.warning(f"Using default DataFetcher for chain: {chain}")
+            return DataFetcher()
     
     def fetch_token_data(
         self,
