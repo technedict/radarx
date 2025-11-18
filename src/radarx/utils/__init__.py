@@ -1,9 +1,9 @@
 """Utility functions and helpers."""
 
-from datetime import datetime
-from typing import Any, Dict
 import hashlib
 import json
+from datetime import datetime
+from typing import Any, Dict
 
 
 def generate_id(prefix: str, *args) -> str:
@@ -18,7 +18,7 @@ def normalize_timestamp(ts: Any) -> datetime:
     if isinstance(ts, datetime):
         return ts
     elif isinstance(ts, str):
-        return datetime.fromisoformat(ts.replace('Z', '+00:00'))
+        return datetime.fromisoformat(ts.replace("Z", "+00:00"))
     elif isinstance(ts, (int, float)):
         return datetime.fromtimestamp(ts)
     else:
@@ -27,7 +27,7 @@ def normalize_timestamp(ts: Any) -> datetime:
 
 def serialize_for_cache(obj: Any) -> str:
     """Serialize object for caching."""
-    if hasattr(obj, 'model_dump'):
+    if hasattr(obj, "model_dump"):
         return json.dumps(obj.model_dump())
     return json.dumps(obj)
 
@@ -35,6 +35,6 @@ def serialize_for_cache(obj: Any) -> str:
 def deserialize_from_cache(data: str, model_class: type) -> Any:
     """Deserialize object from cache."""
     obj_dict = json.loads(data)
-    if hasattr(model_class, 'model_validate'):
+    if hasattr(model_class, "model_validate"):
         return model_class.model_validate(obj_dict)
     return obj_dict

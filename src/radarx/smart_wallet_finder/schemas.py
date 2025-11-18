@@ -4,27 +4,32 @@ Smart Wallet Finder API Schemas
 Pydantic models for request/response validation.
 """
 
-from typing import List, Dict, Any, Optional
-from pydantic import BaseModel, Field
 from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, Field
 
 
 class SmartWalletFindRequest(BaseModel):
     """Request to find smart wallets for a token."""
-    
+
     token_address: str = Field(..., description="Token contract address")
     chain: str = Field(default="ethereum", description="Blockchain network")
     window_days: int = Field(default=30, ge=1, le=365, description="Analysis window in days")
     min_trade_size_usd: Optional[float] = Field(None, ge=0, description="Minimum trade size (USD)")
     min_holdings_usd: Optional[float] = Field(None, ge=0, description="Minimum holdings (USD)")
-    include_internal_transfers: bool = Field(default=False, description="Include internal transfers")
+    include_internal_transfers: bool = Field(
+        default=False, description="Include internal transfers"
+    )
     top_k: int = Field(default=100, ge=1, le=1000, description="Number of top wallets to return")
-    min_confidence: float = Field(default=0.5, ge=0, le=1, description="Minimum confidence threshold")
+    min_confidence: float = Field(
+        default=0.5, ge=0, le=1, description="Minimum confidence threshold"
+    )
 
 
 class WalletProfileRequest(BaseModel):
     """Request for detailed wallet profile."""
-    
+
     wallet_address: str = Field(..., description="Wallet address")
     token_address: str = Field(..., description="Token contract address")
     chain: str = Field(default="ethereum", description="Blockchain network")
@@ -33,17 +38,19 @@ class WalletProfileRequest(BaseModel):
 
 class BulkScanRequest(BaseModel):
     """Request to scan multiple tokens."""
-    
+
     token_addresses: List[str] = Field(..., description="List of token addresses")
     chain: str = Field(default="ethereum", description="Blockchain network")
     window_days: int = Field(default=30, ge=1, le=365, description="Analysis window in days")
     top_k_per_token: int = Field(default=10, ge=1, le=100, description="Top wallets per token")
-    min_confidence: float = Field(default=0.6, ge=0, le=1, description="Minimum confidence threshold")
+    min_confidence: float = Field(
+        default=0.6, ge=0, le=1, description="Minimum confidence threshold"
+    )
 
 
 class KeyMetrics(BaseModel):
     """Key metrics for a wallet."""
-    
+
     win_rate: float = Field(..., ge=0, le=1, description="Win rate ratio")
     realized_roi: float = Field(..., description="Average realized ROI")
     trades_count: int = Field(..., ge=0, description="Number of trades")
@@ -53,7 +60,7 @@ class KeyMetrics(BaseModel):
 
 class SignalContribution(BaseModel):
     """Signal contribution to score."""
-    
+
     category: str = Field(..., description="Signal category")
     name: str = Field(..., description="Signal name")
     value: float = Field(..., description="Signal value")
@@ -64,7 +71,7 @@ class SignalContribution(BaseModel):
 
 class TimelineEvent(BaseModel):
     """Timeline event."""
-    
+
     event_type: str = Field(..., description="Event type")
     description: str = Field(..., description="Event description")
     impact: str = Field(..., description="Impact (positive/negative/neutral)")
@@ -72,7 +79,7 @@ class TimelineEvent(BaseModel):
 
 class WalletExplanation(BaseModel):
     """Explanation for wallet score."""
-    
+
     summary: str = Field(..., description="High-level summary")
     top_signals: List[SignalContribution] = Field(..., description="Top contributing signals")
     interpretation: str = Field(..., description="Score interpretation")
@@ -82,7 +89,7 @@ class WalletExplanation(BaseModel):
 
 class RankedWallet(BaseModel):
     """A ranked smart wallet result."""
-    
+
     rank: int = Field(..., ge=1, description="Rank position")
     wallet_address: str = Field(..., description="Wallet address")
     smart_money_score: float = Field(..., ge=0, le=1, description="Smart-money probability score")
@@ -93,7 +100,7 @@ class RankedWallet(BaseModel):
 
 class AnalysisMetadata(BaseModel):
     """Metadata about the analysis."""
-    
+
     total_wallets_analyzed: int = Field(..., ge=0, description="Total wallets analyzed")
     wallets_passing_filters: int = Field(..., ge=0, description="Wallets passing filters")
     wallets_returned: int = Field(..., ge=0, description="Wallets in result")
@@ -102,7 +109,7 @@ class AnalysisMetadata(BaseModel):
 
 class SummaryStats(BaseModel):
     """Summary statistics."""
-    
+
     avg_smart_money_score: float = Field(..., ge=0, le=1, description="Average score")
     median_smart_money_score: float = Field(..., ge=0, le=1, description="Median score")
     avg_win_rate: float = Field(..., ge=0, le=1, description="Average win rate")
@@ -111,7 +118,7 @@ class SummaryStats(BaseModel):
 
 class SmartWalletFindResponse(BaseModel):
     """Response from find smart wallets endpoint."""
-    
+
     token_address: str = Field(..., description="Token address analyzed")
     chain: str = Field(..., description="Blockchain network")
     analysis_window_days: int = Field(..., description="Analysis window in days")
@@ -123,7 +130,7 @@ class SmartWalletFindResponse(BaseModel):
 
 class Trade(BaseModel):
     """Individual trade."""
-    
+
     timestamp: str = Field(..., description="Trade timestamp")
     side: str = Field(..., description="Trade side (buy/sell)")
     amount_usd: float = Field(..., description="Trade amount in USD")
@@ -134,7 +141,7 @@ class Trade(BaseModel):
 
 class WalletProfileResponse(BaseModel):
     """Response from wallet profile endpoint."""
-    
+
     wallet_address: str = Field(..., description="Wallet address")
     token_address: str = Field(..., description="Token address")
     chain: str = Field(..., description="Blockchain network")
@@ -149,7 +156,7 @@ class WalletProfileResponse(BaseModel):
 
 class TokenWalletSummary(BaseModel):
     """Summary of smart wallets for a token."""
-    
+
     token_address: str = Field(..., description="Token address")
     top_wallets: List[RankedWallet] = Field(..., description="Top smart wallets")
     avg_score: float = Field(..., ge=0, le=1, description="Average smart-money score")
@@ -157,7 +164,7 @@ class TokenWalletSummary(BaseModel):
 
 class BulkScanResponse(BaseModel):
     """Response from bulk scan endpoint."""
-    
+
     chain: str = Field(..., description="Blockchain network")
     tokens_analyzed: int = Field(..., ge=0, description="Number of tokens analyzed")
     timestamp: str = Field(..., description="Analysis timestamp")

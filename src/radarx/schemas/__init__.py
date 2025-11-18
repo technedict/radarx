@@ -1,20 +1,20 @@
 """Schema package initialization."""
 
-from radarx.schemas.token import (
-    TokenScore,
-    TokenFeatures,
-    ProbabilityHeatmap,
-    RiskScore,
-)
-from radarx.schemas.wallet import (
-    WalletReport,
-    WalletMetrics,
-    WinRate,
-    PnLSummary,
-)
 from radarx.schemas.responses import (
     TokenScoreResponse,
     WalletReportResponse,
+)
+from radarx.schemas.token import (
+    ProbabilityHeatmap,
+    RiskScore,
+    TokenFeatures,
+    TokenScore,
+)
+from radarx.schemas.wallet import (
+    PnLSummary,
+    WalletMetrics,
+    WalletReport,
+    WinRate,
 )
 
 __all__ = [

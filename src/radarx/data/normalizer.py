@@ -1,9 +1,9 @@
 """Data normalization and validation utilities."""
 
 import logging
-from typing import Dict, Any, Optional, List
-from datetime import datetime
 import re
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 

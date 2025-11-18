@@ -5,9 +5,9 @@ Main orchestrator for discovering smart-money wallets given a token address.
 Coordinates data fetching, signal computation, scoring, and ranking.
 """
 
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any, Tuple
 import logging
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 class SmartWalletFinder:
     """
     Discovers probable smart-money wallets that traded a given token.
-    
+
     Combines multiple detection signals:
     - Event timing (pre-pump/pre-dump detection)
     - Profitability metrics
@@ -24,7 +24,7 @@ class SmartWalletFinder:
     - Smart-money markers
     - Risk filters
     """
-    
+
     def __init__(
         self,
         data_fetcher=None,
@@ -38,7 +38,7 @@ class SmartWalletFinder:
     ):
         """
         Initialize Smart Wallet Finder.
-        
+
         Args:
             data_fetcher: Fetches on-chain and DEX data
             timing_detector: Detects event timing signals
@@ -50,16 +50,16 @@ class SmartWalletFinder:
             explainer: Generates explanations
         """
         from radarx.smart_wallet_finder.data_fetcher import DataFetcher
-        from radarx.smart_wallet_finder.signals import (
-            TimingSignalDetector,
-            ProfitabilityAnalyzer,
-            GraphAnalyzer,
-            BehavioralAnalyzer,
-        )
+        from radarx.smart_wallet_finder.explainer import WalletExplainer
         from radarx.smart_wallet_finder.risk_filter import RiskFilter
         from radarx.smart_wallet_finder.scorer import WalletScorer
-        from radarx.smart_wallet_finder.explainer import WalletExplainer
-        
+        from radarx.smart_wallet_finder.signals import (
+            BehavioralAnalyzer,
+            GraphAnalyzer,
+            ProfitabilityAnalyzer,
+            TimingSignalDetector,
+        )
+
         self.data_fetcher = data_fetcher or DataFetcher()
         self.timing_detector = timing_detector or TimingSignalDetector()
         self.profitability_analyzer = profitability_analyzer or ProfitabilityAnalyzer()
@@ -68,7 +68,7 @@ class SmartWalletFinder:
         self.risk_filter = risk_filter or RiskFilter()
         self.scorer = scorer or WalletScorer()
         self.explainer = explainer or WalletExplainer()
-    
+
     def find_smart_wallets(
         self,
         token_address: str,
@@ -82,7 +82,7 @@ class SmartWalletFinder:
     ) -> Dict[str, Any]:
         """
         Find smart wallets that traded the given token.
-        
+
         Args:
             token_address: Token contract address
             chain: Blockchain network
@@ -92,7 +92,7 @@ class SmartWalletFinder:
             include_internal_transfers: Include internal transfers
             top_k: Number of top wallets to return
             min_confidence: Minimum confidence score threshold
-            
+
         Returns:
             Dictionary containing:
                 - ranked_wallets: List of wallet rankings with scores
@@ -103,12 +103,13 @@ class SmartWalletFinder:
             f"Finding smart wallets for token {token_address} on {chain}, "
             f"window={window_days}d, top_k={top_k}"
         )
-        
+
         # Create chain-specific data fetcher if not already set
-        if self.data_fetcher.__class__.__name__ == 'DataFetcher':
+        if self.data_fetcher.__class__.__name__ == "DataFetcher":
             from radarx.smart_wallet_finder.data_fetcher import DataFetcher
+
             self.data_fetcher = DataFetcher.create_for_chain(chain)
-        
+
         # Step 1: Fetch data
         logger.info("Step 1: Fetching on-chain and price data")
         data = self._fetch_data(
@@ -117,7 +118,7 @@ class SmartWalletFinder:
             window_days=window_days,
             include_internal_transfers=include_internal_transfers,
         )
-        
+
         # Step 2: Extract wallet addresses and trades
         logger.info("Step 2: Extracting wallets and matching trades")
         wallets_data = self._extract_wallets_and_trades(
@@ -125,7 +126,7 @@ class SmartWalletFinder:
             min_trade_size_usd=min_trade_size_usd,
             min_holdings_usd=min_holdings_usd,
         )
-        
+
         # Step 3: Compute signals for each wallet
         logger.info(f"Step 3: Computing signals for {len(wallets_data)} wallets")
         wallet_signals = self._compute_signals(
@@ -133,11 +134,11 @@ class SmartWalletFinder:
             price_timeline=data.get("price_timeline", []),
             graph_data=data.get("graph_data", {}),
         )
-        
+
         # Step 4: Apply risk filters
         logger.info("Step 4: Applying risk filters")
         filtered_signals = self._apply_risk_filters(wallet_signals)
-        
+
         # Step 5: Score and rank wallets
         logger.info("Step 5: Scoring and ranking wallets")
         ranked_wallets = self._score_and_rank(
@@ -145,14 +146,14 @@ class SmartWalletFinder:
             top_k=top_k,
             min_confidence=min_confidence,
         )
-        
+
         # Step 6: Generate explanations
         logger.info("Step 6: Generating explanations")
         explained_wallets = self._generate_explanations(
             ranked_wallets,
             wallet_signals=wallet_signals,
         )
-        
+
         # Step 7: Compile results
         result = {
             "token_address": token_address,
@@ -168,10 +169,10 @@ class SmartWalletFinder:
                 "confidence_threshold": min_confidence,
             },
         }
-        
+
         logger.info(f"Analysis complete. Returning {len(explained_wallets)} smart wallets")
         return result
-    
+
     def get_wallet_profile(
         self,
         wallet_address: str,
@@ -181,18 +182,18 @@ class SmartWalletFinder:
     ) -> Dict[str, Any]:
         """
         Get detailed profile for a specific wallet and token.
-        
+
         Args:
             wallet_address: Wallet address to profile
             token_address: Token address
             chain: Blockchain network
             window_days: Analysis window
-            
+
         Returns:
             Detailed wallet profile with trades, metrics, and explanations
         """
         logger.info(f"Getting profile for wallet {wallet_address} on token {token_address}")
-        
+
         # Fetch data for this specific wallet
         data = self._fetch_wallet_data(
             wallet_address=wallet_address,
@@ -200,23 +201,23 @@ class SmartWalletFinder:
             chain=chain,
             window_days=window_days,
         )
-        
+
         # Compute all signals
         signals = self._compute_wallet_signals(
             wallet_data=data,
             price_timeline=data.get("price_timeline", []),
         )
-        
+
         # Score wallet
         score = self.scorer.score_wallet(signals)
-        
+
         # Generate explanation
         explanation = self.explainer.explain_wallet(
             wallet_address=wallet_address,
             signals=signals,
             score=score,
         )
-        
+
         return {
             "wallet_address": wallet_address,
             "token_address": token_address,
@@ -229,7 +230,7 @@ class SmartWalletFinder:
             "explanation": explanation,
             "timestamp": datetime.utcnow().isoformat(),
         }
-    
+
     def _fetch_data(
         self,
         token_address: str,
@@ -244,7 +245,7 @@ class SmartWalletFinder:
             window_days=window_days,
             include_internal_transfers=include_internal_transfers,
         )
-    
+
     def _fetch_wallet_data(
         self,
         wallet_address: str,
@@ -259,7 +260,7 @@ class SmartWalletFinder:
             chain=chain,
             window_days=window_days,
         )
-    
+
     def _extract_wallets_and_trades(
         self,
         data: Dict[str, Any],
@@ -268,18 +269,18 @@ class SmartWalletFinder:
     ) -> Dict[str, Dict[str, Any]]:
         """Extract and filter wallets from data."""
         from radarx.smart_wallet_finder.trade_matcher import TradeMatcher
-        
+
         matcher = TradeMatcher()
-        
+
         # Match buys and sells for each wallet
         wallets_data = matcher.match_trades(
             trades=data.get("trades", []),
             min_trade_size_usd=min_trade_size_usd,
             min_holdings_usd=min_holdings_usd,
         )
-        
+
         return wallets_data
-    
+
     def _compute_signals(
         self,
         wallets_data: Dict[str, Dict[str, Any]],
@@ -288,37 +289,37 @@ class SmartWalletFinder:
     ) -> Dict[str, Dict[str, Any]]:
         """Compute all signals for each wallet."""
         wallet_signals = {}
-        
+
         for wallet_address, wallet_data in wallets_data.items():
             signals = {}
-            
+
             # Timing signals
             signals["timing"] = self.timing_detector.detect(
                 trades=wallet_data.get("trades", []),
                 price_timeline=price_timeline,
             )
-            
+
             # Profitability signals
             signals["profitability"] = self.profitability_analyzer.analyze(
                 trades=wallet_data.get("trades", []),
             )
-            
+
             # Graph signals
             signals["graph"] = self.graph_analyzer.analyze(
                 wallet_address=wallet_address,
                 graph_data=graph_data,
             )
-            
+
             # Behavioral signals
             signals["behavioral"] = self.behavioral_analyzer.analyze(
                 wallet_address=wallet_address,
                 trades=wallet_data.get("trades", []),
             )
-            
+
             wallet_signals[wallet_address] = signals
-        
+
         return wallet_signals
-    
+
     def _compute_wallet_signals(
         self,
         wallet_data: Dict[str, Any],
@@ -326,40 +327,40 @@ class SmartWalletFinder:
     ) -> Dict[str, Any]:
         """Compute signals for a single wallet."""
         signals = {}
-        
+
         signals["timing"] = self.timing_detector.detect(
             trades=wallet_data.get("trades", []),
             price_timeline=price_timeline,
         )
-        
+
         signals["profitability"] = self.profitability_analyzer.analyze(
             trades=wallet_data.get("trades", []),
         )
-        
+
         signals["behavioral"] = self.behavioral_analyzer.analyze(
             wallet_address=wallet_data.get("wallet_address"),
             trades=wallet_data.get("trades", []),
         )
-        
+
         return signals
-    
+
     def _apply_risk_filters(
         self,
         wallet_signals: Dict[str, Dict[str, Any]],
     ) -> Dict[str, Dict[str, Any]]:
         """Filter out risky wallets (wash trading, bots, etc.)."""
         filtered = {}
-        
+
         for wallet_address, signals in wallet_signals.items():
             risk_score = self.risk_filter.compute_risk_score(signals)
-            
+
             # Keep wallet if risk score is acceptable
             if risk_score < self.risk_filter.max_risk_threshold:
                 filtered[wallet_address] = signals
                 filtered[wallet_address]["risk_score"] = risk_score
-        
+
         return filtered
-    
+
     def _score_and_rank(
         self,
         wallet_signals: Dict[str, Dict[str, Any]],
@@ -368,18 +369,18 @@ class SmartWalletFinder:
     ) -> List[Tuple[str, float, Dict[str, Any]]]:
         """Score and rank wallets by smart-money probability."""
         scored_wallets = []
-        
+
         for wallet_address, signals in wallet_signals.items():
             score = self.scorer.score_wallet(signals)
-            
+
             if score >= min_confidence:
                 scored_wallets.append((wallet_address, score, signals))
-        
+
         # Sort by score descending
         scored_wallets.sort(key=lambda x: x[1], reverse=True)
-        
+
         return scored_wallets[:top_k]
-    
+
     def find_smart_wallets_with_advanced_ml(
         self,
         token_address: str,
@@ -392,7 +393,7 @@ class SmartWalletFinder:
     ) -> Dict[str, Any]:
         """
         Find smart wallets with advanced ML features enabled.
-        
+
         Args:
             token_address: Token contract address
             chain: Blockchain network
@@ -401,16 +402,16 @@ class SmartWalletFinder:
             enable_granger: Enable Granger causality analysis
             enable_embeddings: Enable behavior embeddings
             enable_counterfactual: Enable counterfactual impact analysis
-            
+
         Returns:
             Enhanced results with ML insights
         """
         from radarx.smart_wallet_finder.advanced_ml import (
+            CounterfactualAnalyzer,
             GrangerCausalityAnalyzer,
             WalletBehaviorEmbedder,
-            CounterfactualAnalyzer,
         )
-        
+
         # Get base results
         base_results = self.find_smart_wallets(
             token_address=token_address,
@@ -418,24 +419,24 @@ class SmartWalletFinder:
             window_days=window_days,
             top_k=top_k,
         )
-        
+
         # Initialize advanced analyzers
         granger_analyzer = GrangerCausalityAnalyzer() if enable_granger else None
         embedder = WalletBehaviorEmbedder() if enable_embeddings else None
         counterfactual = CounterfactualAnalyzer() if enable_counterfactual else None
-        
+
         # Enhance each wallet with advanced features
         enhanced_wallets = []
-        
+
         for wallet in base_results["ranked_wallets"]:
             wallet_address = wallet["wallet_address"]
-            
+
             # Get wallet trades from metadata
             wallet_trades = wallet.get("metadata", {}).get("trades", [])
-            
+
             enhanced = wallet.copy()
             enhanced["advanced_features"] = {}
-            
+
             # Granger causality
             if granger_analyzer and wallet_trades:
                 price_timeline = base_results.get("metadata", {}).get("price_timeline", [])
@@ -443,12 +444,12 @@ class SmartWalletFinder:
                     wallet_trades, price_timeline
                 )
                 enhanced["advanced_features"]["granger_causality"] = causality
-            
+
             # Behavior embeddings
             if embedder and wallet_trades:
                 embedding = embedder.embed_wallet_sequence(wallet_trades)
                 enhanced["advanced_features"]["behavior_embedding"] = embedding.tolist()
-            
+
             # Counterfactual impact
             if counterfactual and wallet_trades:
                 all_trades = base_results.get("metadata", {}).get("all_trades", [])
@@ -457,9 +458,9 @@ class SmartWalletFinder:
                     wallet_trades, all_trades, price_timeline
                 )
                 enhanced["advanced_features"]["counterfactual_impact"] = impact
-            
+
             enhanced_wallets.append(enhanced)
-        
+
         return {
             **base_results,
             "ranked_wallets": enhanced_wallets,
@@ -469,7 +470,7 @@ class SmartWalletFinder:
                 "counterfactual_analysis": enable_counterfactual,
             },
         }
-    
+
     def _generate_explanations(
         self,
         ranked_wallets: List[Tuple[str, float, Dict[str, Any]]],
@@ -477,25 +478,27 @@ class SmartWalletFinder:
     ) -> List[Dict[str, Any]]:
         """Generate explanations for each wallet."""
         explained = []
-        
+
         for rank, (wallet_address, score, signals) in enumerate(ranked_wallets, 1):
             explanation = self.explainer.explain_wallet(
                 wallet_address=wallet_address,
                 signals=signals,
                 score=score,
             )
-            
-            explained.append({
-                "rank": rank,
-                "wallet_address": wallet_address,
-                "smart_money_score": score,
-                "key_metrics": self._extract_key_metrics(signals),
-                "explanation": explanation,
-                "risk_score": signals.get("risk_score", 0.0),
-            })
-        
+
+            explained.append(
+                {
+                    "rank": rank,
+                    "wallet_address": wallet_address,
+                    "smart_money_score": score,
+                    "key_metrics": self._extract_key_metrics(signals),
+                    "explanation": explanation,
+                    "risk_score": signals.get("risk_score", 0.0),
+                }
+            )
+
         return explained
-    
+
     def _extract_key_metrics(self, signals: Dict[str, Any]) -> Dict[str, Any]:
         """Extract key metrics from signals for display."""
         return {
@@ -505,7 +508,7 @@ class SmartWalletFinder:
             "early_entry_rate": signals.get("timing", {}).get("pre_pump_entry_rate", 0.0),
             "graph_centrality": signals.get("graph", {}).get("centrality_score", 0.0),
         }
-    
+
     def _compute_summary_stats(
         self,
         explained_wallets: List[Dict[str, Any]],
@@ -513,10 +516,10 @@ class SmartWalletFinder:
         """Compute summary statistics across all wallets."""
         if not explained_wallets:
             return {}
-        
+
         scores = [w["smart_money_score"] for w in explained_wallets]
         win_rates = [w["key_metrics"]["win_rate"] for w in explained_wallets]
-        
+
         return {
             "avg_smart_money_score": sum(scores) / len(scores) if scores else 0.0,
             "median_smart_money_score": sorted(scores)[len(scores) // 2] if scores else 0.0,

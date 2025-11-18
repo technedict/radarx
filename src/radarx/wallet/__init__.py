@@ -15,8 +15,8 @@ from radarx.wallet.ranker import WalletRanker
 from radarx.wallet.related import RelatedWalletFinder
 
 __all__ = [
-    'WalletAnalyzer',
-    'BehaviorDetector',
-    'WalletRanker',
-    'RelatedWalletFinder',
+    "WalletAnalyzer",
+    "BehaviorDetector",
+    "WalletRanker",
+    "RelatedWalletFinder",
 ]
