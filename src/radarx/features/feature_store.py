@@ -1,5 +1,6 @@
 """Feature store with time-travel capability."""
 
+import asyncio
 import json
 import logging
 from datetime import datetime, timezone
@@ -9,11 +10,12 @@ logger = logging.getLogger(__name__)
 
 
 class FeatureStore:
-    """Store and retrieve features with time-travel capability."""
+    """Store and retrieve features with time-travel capability and async safety."""
 
     def __init__(self):
         """Initialize feature store."""
         self.features: Dict[str, List[Dict[str, Any]]] = {}
+        self._lock = asyncio.Lock()
 
     async def store_features(
         self,
@@ -32,19 +34,20 @@ class FeatureStore:
         """
         timestamp = timestamp or datetime.now(timezone.utc)
 
-        if entity_id not in self.features:
-            self.features[entity_id] = []
+        async with self._lock:
+            if entity_id not in self.features:
+                self.features[entity_id] = []
 
-        entry = {
-            "timestamp": timestamp,
-            "features": features,
-            "metadata": metadata or {},
-        }
+            entry = {
+                "timestamp": timestamp,
+                "features": features,
+                "metadata": metadata or {},
+            }
 
-        self.features[entity_id].append(entry)
+            self.features[entity_id].append(entry)
 
-        # Keep sorted by timestamp
-        self.features[entity_id].sort(key=lambda x: x["timestamp"])
+            # Keep sorted by timestamp
+            self.features[entity_id].sort(key=lambda x: x["timestamp"])
 
         logger.debug(f"Stored features for {entity_id} at {timestamp}")
 
@@ -62,15 +65,16 @@ class FeatureStore:
         """
         timestamp = timestamp or datetime.now(timezone.utc)
 
-        if entity_id not in self.features:
-            return {}
+        async with self._lock:
+            if entity_id not in self.features:
+                return {}
 
-        # Find most recent features before or at timestamp
-        entity_features = self.features[entity_id]
+            # Find most recent features before or at timestamp
+            entity_features = self.features[entity_id]
 
-        for entry in reversed(entity_features):
-            if entry["timestamp"] <= timestamp:
-                return entry["features"]
+            for entry in reversed(entity_features):
+                if entry["timestamp"] <= timestamp:
+                    return entry["features"]
 
         # No features found before timestamp
         return {}
