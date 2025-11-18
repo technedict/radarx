@@ -1,10 +1,12 @@
 """Risk assessment feed clients (RugCheck, GoPlus)."""
 
-import httpx
 import logging
-from typing import Dict, List, Optional, Any
-from radarx.data.cache import CacheManager
+from typing import Any, Dict, List, Optional
+
+import httpx
+
 from radarx.config import settings
+from radarx.data.cache import CacheManager
 
 logger = logging.getLogger(__name__)
 

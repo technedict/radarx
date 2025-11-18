@@ -8,9 +8,9 @@ probability predictions, risk assessment, and explainable signals.
 __version__ = "0.1.0"
 __author__ = "RadarX Team"
 
-from radarx.schemas.token import TokenScore, TokenFeatures
-from radarx.schemas.wallet import WalletReport, WalletMetrics
 from radarx.schemas.responses import TokenScoreResponse, WalletReportResponse
+from radarx.schemas.token import TokenFeatures, TokenScore
+from radarx.schemas.wallet import WalletMetrics, WalletReport
 
 __all__ = [
     "TokenScore",

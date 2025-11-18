@@ -6,15 +6,15 @@ multi-signal analysis, including timing detection, profitability metrics, graph 
 and behavioral fingerprints.
 """
 
-from radarx.smart_wallet_finder.finder import SmartWalletFinder
-from radarx.smart_wallet_finder.signals import (
-    TimingSignalDetector,
-    ProfitabilityAnalyzer,
-    GraphAnalyzer,
-    BehavioralAnalyzer,
-)
-from radarx.smart_wallet_finder.scorer import WalletScorer
 from radarx.smart_wallet_finder.explainer import WalletExplainer
+from radarx.smart_wallet_finder.finder import SmartWalletFinder
+from radarx.smart_wallet_finder.scorer import WalletScorer
+from radarx.smart_wallet_finder.signals import (
+    BehavioralAnalyzer,
+    GraphAnalyzer,
+    ProfitabilityAnalyzer,
+    TimingSignalDetector,
+)
 
 __all__ = [
     "SmartWalletFinder",

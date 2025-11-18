@@ -1,12 +1,14 @@
 """Social media API clients for sentiment and mention tracking."""
 
-import httpx
 import logging
-from typing import Dict, List, Optional, Any
-from datetime import datetime, timedelta
 from abc import ABC, abstractmethod
-from radarx.data.cache import CacheManager
+from datetime import datetime, timedelta, timezone
+from typing import Any, Dict, List, Optional
+
+import httpx
+
 from radarx.config import settings
+from radarx.data.cache import CacheManager
 
 logger = logging.getLogger(__name__)
 
@@ -171,7 +173,7 @@ class TwitterClient(SocialMediaClient):
         Returns:
             Stats including volume, velocity, top influencers
         """
-        end_time = datetime.utcnow()
+        end_time = datetime.now(timezone.utc)
         start_time = end_time - timedelta(hours=hours)
         
         tweets = await self.search_mentions(query, start_time, end_time, limit=100)
