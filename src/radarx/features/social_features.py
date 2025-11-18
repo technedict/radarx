@@ -3,7 +3,7 @@
 import logging
 import re
 from collections import Counter
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 from radarx.data import DataNormalizer, RedditClient, TwitterClient
@@ -50,7 +50,7 @@ class SocialFeatureExtractor:
         features[f"reddit_mentions_{hours}h"] = 0
         features[f"total_mentions_{hours}h"] = 0
 
-        end_time = datetime.utcnow()
+        end_time = datetime.now(timezone.utc)
         start_time = end_time - timedelta(hours=hours)
 
         # Twitter mentions
@@ -123,7 +123,7 @@ class SocialFeatureExtractor:
         """
         features = {}
 
-        end_time = datetime.utcnow()
+        end_time = datetime.now(timezone.utc)
         start_time = end_time - timedelta(hours=hours)
 
         total_likes = 0
@@ -259,7 +259,7 @@ class SocialFeatureExtractor:
 
         if self.twitter_client:
             try:
-                end_time = datetime.utcnow()
+                end_time = datetime.now(timezone.utc)
                 start_time = end_time - timedelta(hours=hours)
 
                 tweets = await self.twitter_client.search_mentions(
@@ -369,7 +369,7 @@ class SocialFeatureExtractor:
         # Get tweets for sentiment and bot detection
         if self.twitter_client:
             try:
-                end_time = datetime.utcnow()
+                end_time = datetime.now(timezone.utc)
                 start_time = end_time - timedelta(hours=hours)
                 tweets = await self.twitter_client.search_mentions(
                     query, start_time, end_time, limit=100

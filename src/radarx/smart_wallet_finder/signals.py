@@ -9,7 +9,7 @@ Implements various detection signals for smart wallet identification:
 """
 
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 import numpy as np
@@ -263,7 +263,7 @@ class TimingSignalDetector:
             # Handle ISO format with Z
             ts_str = timestamp.replace("Z", "+00:00")
             return datetime.fromisoformat(ts_str)
-        return datetime.utcnow()
+        return datetime.now(timezone.utc)
 
     def _empty_signals(self) -> Dict[str, Any]:
         """Return empty signals structure."""
@@ -364,7 +364,7 @@ class ProfitabilityAnalyzer:
         if isinstance(timestamp, str):
             ts_str = timestamp.replace("Z", "+00:00")
             return datetime.fromisoformat(ts_str)
-        return datetime.utcnow()
+        return datetime.now(timezone.utc)
 
     def _empty_metrics(self) -> Dict[str, Any]:
         """Return empty metrics structure."""
@@ -690,7 +690,7 @@ class BehavioralAnalyzer:
         if isinstance(timestamp, str):
             ts_str = timestamp.replace("Z", "+00:00")
             return datetime.fromisoformat(ts_str)
-        return datetime.utcnow()
+        return datetime.now(timezone.utc)
 
     def _empty_metrics(self) -> Dict[str, Any]:
         """Return empty metrics structure."""

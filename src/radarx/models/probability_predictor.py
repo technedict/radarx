@@ -6,7 +6,7 @@ for multi-horizon probability predictions.
 """
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -188,7 +188,7 @@ class ProbabilityPredictor:
         # Set ensemble weights (can be optimized via validation)
         self.ensemble_weights = {"xgb": 0.4, "lgb": 0.4, "temporal": 0.2}
 
-        self.trained_at = datetime.utcnow()
+        self.trained_at = datetime.now(timezone.utc)
         self.is_trained = True
         logger.info("Training complete!")
 

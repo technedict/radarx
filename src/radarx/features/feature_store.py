@@ -2,7 +2,7 @@
 
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
@@ -30,7 +30,7 @@ class FeatureStore:
             timestamp: Timestamp (defaults to now)
             metadata: Optional metadata
         """
-        timestamp = timestamp or datetime.utcnow()
+        timestamp = timestamp or datetime.now(timezone.utc)
 
         if entity_id not in self.features:
             self.features[entity_id] = []
@@ -60,7 +60,7 @@ class FeatureStore:
         Returns:
             Feature dictionary
         """
-        timestamp = timestamp or datetime.utcnow()
+        timestamp = timestamp or datetime.now(timezone.utc)
 
         if entity_id not in self.features:
             return {}

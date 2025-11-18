@@ -2,7 +2,7 @@
 
 import logging
 from abc import ABC, abstractmethod
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 import httpx
@@ -173,7 +173,7 @@ class TwitterClient(SocialMediaClient):
         Returns:
             Stats including volume, velocity, top influencers
         """
-        end_time = datetime.utcnow()
+        end_time = datetime.now(timezone.utc)
         start_time = end_time - timedelta(hours=hours)
         
         tweets = await self.search_mentions(query, start_time, end_time, limit=100)

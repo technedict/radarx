@@ -1,7 +1,7 @@
 """API services for token scoring and wallet analytics."""
 
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional
 
 from radarx.schemas.token import (
@@ -58,7 +58,7 @@ class TokenScoringService:
         sample_data = SAMPLE_TOKEN_SCORE.copy()
         sample_data["token_address"] = address
         sample_data["chain"] = chain
-        sample_data["timestamp"] = datetime.utcnow().isoformat()
+        sample_data["timestamp"] = datetime.now(timezone.utc).isoformat()
 
         # Filter horizons if specified
         if horizons and horizons != ["24h", "7d", "30d"]:
@@ -111,7 +111,7 @@ class WalletAnalyticsService:
         sample_data = SAMPLE_WALLET_REPORT.copy()
         sample_data["wallet_address"] = address
         sample_data["chain"] = chain
-        sample_data["timestamp"] = datetime.utcnow().isoformat()
+        sample_data["timestamp"] = datetime.now(timezone.utc).isoformat()
 
         # Set timeframe
         if from_date and to_date:
@@ -119,7 +119,7 @@ class WalletAnalyticsService:
             sample_data["timeframe"]["to"] = to_date
         else:
             # Use period to determine timeframe
-            to_dt = datetime.utcnow()
+            to_dt = datetime.now(timezone.utc)
             if period == "1d":
                 from_dt = to_dt - timedelta(days=1)
             elif period == "7d":

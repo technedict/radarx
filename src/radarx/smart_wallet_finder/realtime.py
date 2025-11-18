@@ -7,7 +7,7 @@ WebSocket support for live trade monitoring and signal updates.
 import asyncio
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
@@ -195,7 +195,7 @@ class RealTimeMonitor:
             result = data["params"]["result"]
 
             return {
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
                 "chain": "solana",
                 "signature": result.get("signature"),
                 "logs": result.get("logs", []),
@@ -215,7 +215,7 @@ class RealTimeMonitor:
             result = data["params"]["result"]
 
             return {
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
                 "chain": "ethereum",
                 "transaction_hash": result.get("transactionHash"),
                 "from": result.get("from"),
@@ -271,7 +271,7 @@ class LiveSignalUpdater:
                         "wallet": wallet,
                         "signals": updated_signals,
                         "trade": trade,
-                        "timestamp": datetime.utcnow().isoformat(),
+                        "timestamp": datetime.now(timezone.utc).isoformat(),
                     }
                 )
             except Exception as e:

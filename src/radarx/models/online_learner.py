@@ -5,7 +5,7 @@ Implements continual learning with incremental model updates.
 """
 
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -77,7 +77,7 @@ class OnlineLearner:
         if self.last_update is None:
             return True
 
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
 
         if self.update_frequency == "daily":
             return (now - self.last_update) > timedelta(days=1)
@@ -120,7 +120,7 @@ class OnlineLearner:
                 logger.warning(f"Model for {key} doesn't support partial_fit")
 
         self.update_count += 1
-        self.last_update = datetime.utcnow()
+        self.last_update = datetime.now(timezone.utc)
         self.samples_since_retrain += len(X)
 
     def should_retrain(self, current_performance: float) -> bool:
@@ -165,7 +165,9 @@ class OnlineLearner:
         self.performance_history.append(
             {
                 "timestamp": (
-                    datetime.now(datetime.UTC) if hasattr(datetime, "UTC") else datetime.utcnow()
+                    datetime.now(datetime.UTC)
+                    if hasattr(datetime, "UTC")
+                    else datetime.now(timezone.utc)
                 ),
                 "performance": performance,
                 "update_count": self.update_count,

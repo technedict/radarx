@@ -1,7 +1,7 @@
 """Time-windowed feature aggregation."""
 
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List
 
 logger = logging.getLogger(__name__)
@@ -28,7 +28,7 @@ class TimeWindowAggregator:
         windows = windows or self.STANDARD_WINDOWS
         aggregated = {}
 
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
 
         for window in windows:
             # Parse window string (e.g., "24h", "7d")

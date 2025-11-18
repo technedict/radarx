@@ -6,7 +6,7 @@ Coordinates data fetching, signal computation, scoring, and ranking.
 """
 
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
@@ -159,7 +159,7 @@ class SmartWalletFinder:
             "token_address": token_address,
             "chain": chain,
             "analysis_window_days": window_days,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "ranked_wallets": explained_wallets,
             "summary_stats": self._compute_summary_stats(explained_wallets),
             "metadata": {
@@ -228,7 +228,7 @@ class SmartWalletFinder:
             "win_rate": signals.get("profitability", {}).get("win_rate", 0.0),
             "graph_neighbors": data.get("graph_neighbors", []),
             "explanation": explanation,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
 
     def _fetch_data(

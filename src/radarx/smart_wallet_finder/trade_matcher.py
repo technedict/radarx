@@ -6,7 +6,7 @@ internal transfers, and liquidity events.
 """
 
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
@@ -220,4 +220,4 @@ class TradeMatcher:
         if isinstance(timestamp, str):
             ts_str = timestamp.replace("Z", "+00:00")
             return datetime.fromisoformat(ts_str)
-        return datetime.utcnow()
+        return datetime.now(timezone.utc)

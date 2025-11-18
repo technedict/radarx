@@ -1,7 +1,7 @@
 """Wallet-level feature extraction."""
 
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 import numpy as np
@@ -54,11 +54,11 @@ class WalletFeatureExtractor:
         # Trade frequency
         if trades:
             first_trade = min(
-                DataNormalizer.normalize_timestamp(t.get("timestamp", datetime.utcnow()))
+                DataNormalizer.normalize_timestamp(t.get("timestamp", datetime.now(timezone.utc)))
                 for t in trades
             )
             last_trade = max(
-                DataNormalizer.normalize_timestamp(t.get("timestamp", datetime.utcnow()))
+                DataNormalizer.normalize_timestamp(t.get("timestamp", datetime.now(timezone.utc)))
                 for t in trades
             )
             days = (last_trade - first_trade).days or 1

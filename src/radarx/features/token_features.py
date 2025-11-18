@@ -1,7 +1,7 @@
 """Token-level feature extraction."""
 
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 import numpy as np
@@ -78,7 +78,7 @@ class TokenFeatureExtractor:
         # Token age (hours since creation)
         if "pair_created_at" in token_data and token_data["pair_created_at"]:
             created_at = DataNormalizer.normalize_timestamp(token_data["pair_created_at"])
-            age = (datetime.utcnow() - created_at).total_seconds() / 3600
+            age = (datetime.now(timezone.utc) - created_at).total_seconds() / 3600
             features["token_age_hours"] = age
         else:
             features["token_age_hours"] = 0

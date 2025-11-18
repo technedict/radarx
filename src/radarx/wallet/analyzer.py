@@ -4,7 +4,7 @@ Wallet Analyzer
 Calculates win rates, PnL metrics, and performance statistics for wallet trading history.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 import numpy as np
@@ -33,7 +33,7 @@ class WalletAnalyzer:
         if timeframes is None:
             timeframes = ["1d", "7d", "30d", "all"]
 
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         results = {}
 
         for tf in timeframes:

@@ -1,6 +1,6 @@
 """FastAPI application and REST API endpoints."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 
 import uvicorn
@@ -84,7 +84,7 @@ async def health_check():
     """Health check endpoint."""
     return {
         "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "version": settings.api_version,
     }
 
@@ -286,8 +286,8 @@ async def subscribe_to_alerts(
     return {
         "status": "subscribed",
         "webhook_url": webhook_url,
-        "subscription_id": "sub_" + datetime.utcnow().strftime("%Y%m%d%H%M%S"),
-        "created_at": datetime.utcnow().isoformat(),
+        "subscription_id": "sub_" + datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S"),
+        "created_at": datetime.now(timezone.utc).isoformat(),
     }
 
 
@@ -424,7 +424,7 @@ async def bulk_scan_tokens(request: BulkScanRequest):
         return {
             "chain": request.chain,
             "tokens_analyzed": len(request.token_addresses),
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "results": results,
             "leaderboard": leaderboard,
         }

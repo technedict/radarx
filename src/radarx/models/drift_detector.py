@@ -7,7 +7,7 @@ Detects concept drift in features and model performance over time.
 import logging
 from collections import deque
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Dict, List, Optional, Tuple
 
@@ -143,7 +143,7 @@ class DriftDetector:
                 confidence=0.0,
                 affected_features=[],
                 performance_change=None,
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc),
                 details={"status": "insufficient_data"},
             )
 
@@ -180,7 +180,7 @@ class DriftDetector:
             confidence=confidence,
             affected_features=affected_features,
             performance_change=perf_change,
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             details={
                 "feature_drift": feature_drift,
                 "prediction_drift": prediction_drift,

@@ -6,7 +6,7 @@ from various sources (Etherscan, Solscan, DexScreener, etc.)
 """
 
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
@@ -79,7 +79,7 @@ class DataFetcher:
         """
         logger.info(f"Fetching data for token {token_address} on {chain}")
 
-        end_time = datetime.utcnow()
+        end_time = datetime.now(timezone.utc)
         start_time = end_time - timedelta(days=window_days)
 
         # Fetch trades from DEX
@@ -141,7 +141,7 @@ class DataFetcher:
         """
         logger.info(f"Fetching data for wallet {wallet_address}, token {token_address}")
 
-        end_time = datetime.utcnow()
+        end_time = datetime.now(timezone.utc)
         start_time = end_time - timedelta(days=window_days)
 
         # Fetch wallet trades for this token

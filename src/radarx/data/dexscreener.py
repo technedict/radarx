@@ -1,7 +1,7 @@
 """DexScreener API client for token data."""
 
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 import httpx
@@ -119,7 +119,7 @@ class DexScreenerClient:
             "pair_address": main_pair.get("pairAddress"),
             "dex_id": main_pair.get("dexId"),
             "pair_created_at": main_pair.get("pairCreatedAt"),
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
     
     async def search_pairs(
