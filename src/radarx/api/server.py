@@ -281,13 +281,37 @@ async def subscribe_to_alerts(
     Returns:
         Subscription confirmation
     """
-    # This is a placeholder implementation
-    # In production, this would create a subscription in the database
+    # Create subscription record
+    from uuid import uuid4
+    
+    subscription_id = f"sub_{uuid4().hex[:12]}"
+    created_at = datetime.now(timezone.utc)
+    
+    # In production, persist to database
+    subscription_data = {
+        "id": subscription_id,
+        "webhook_url": webhook_url,
+        "filters": {
+            "token_addresses": token_addresses,
+            "min_probability_2x": min_probability_2x,
+            "min_probability_10x": min_probability_10x,
+            "max_risk_score": max_risk_score,
+            "dev_sell_threshold": dev_sell_threshold,
+        },
+        "active": True,
+        "created_at": created_at,
+    }
+    
+    # TODO: Store in database when DB is configured
+    # db.save_subscription(subscription_data)
+    
+    logger.info(f"Created alert subscription {subscription_id} for {webhook_url}")
+    
     return {
         "status": "subscribed",
         "webhook_url": webhook_url,
-        "subscription_id": "sub_" + datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S"),
-        "created_at": datetime.now(timezone.utc).isoformat(),
+        "subscription_id": subscription_id,
+        "created_at": created_at.isoformat(),
     }
 
 
