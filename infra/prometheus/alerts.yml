@@ -1,0 +1,75 @@
+# RadarX Alerting Rules
+
+groups:
+  - name: radarx_alerts
+    interval: 30s
+    rules:
+      # API Health
+      - alert: APIDown
+        expr: up{job="radarx-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "RadarX API is down"
+          description: "API has been down for more than 1 minute"
+
+      # High error rate
+      - alert: HighErrorRate
+        expr: rate(radarx_errors_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value }} per second"
+
+      # Slow API responses
+      - alert: SlowAPIResponses
+        expr: histogram_quantile(0.95, rate(radarx_request_duration_seconds_bucket[5m])) > 2
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "API responses are slow"
+          description: "95th percentile latency is {{ $value }}s"
+
+      # Model prediction failures
+      - alert: ModelPredictionFailures
+        expr: rate(radarx_prediction_errors_total[10m]) > 0.05
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Model predictions failing"
+          description: "Prediction failure rate: {{ $value }}/s"
+
+      # Feature drift detected
+      - alert: FeatureDriftDetected
+        expr: radarx_feature_drift_score > 0.5
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Feature drift detected"
+          description: "Drift score: {{ $value }}"
+
+      # Cache hit rate low
+      - alert: LowCacheHitRate
+        expr: rate(radarx_cache_hits_total[10m]) / (rate(radarx_cache_hits_total[10m]) + rate(radarx_cache_misses_total[10m])) < 0.3
+        for: 20m
+        labels:
+          severity: info
+        annotations:
+          summary: "Cache hit rate is low"
+          description: "Hit rate is {{ $value | humanizePercentage }}"
+
+      # Database connection pool exhausted
+      - alert: DatabaseConnectionPoolExhausted
+        expr: radarx_db_connections_in_use / radarx_db_connections_max > 0.9
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Database connection pool near capacity"
+          description: "{{ $value | humanizePercentage }} of connections in use"

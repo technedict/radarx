@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: radarx-config
+  namespace: radarx
+data:
+  API_HOST: "0.0.0.0"
+  API_PORT: "8000"
+  MODEL_VERSION: "v1.0.0"
+  FEATURE_VERSION: "v1.0.0"
+  LOG_LEVEL: "INFO"
+  ENABLE_ONLINE_LEARNING: "false"
+  REDIS_URL: "redis://radarx-redis:6379/0"
+  DATABASE_URL: "postgresql://radarx:${POSTGRES_PASSWORD}@radarx-postgres:5432/radarx"

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: radarx
+  labels:
+    name: radarx
+    environment: production
